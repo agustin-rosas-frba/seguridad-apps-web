@@ -1,10 +1,18 @@
 // 1 - Invocamos a Express
 const express = require('express');
 const app = express();
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
+
+
+
 
 //2 - Para poder capturar los datos del formulario (sin urlencoded nos devuelve "undefined")
 app.use(express.urlencoded({extended:false}));
 app.use(express.json());//además le decimos a express que vamos a usar json
+app.use(cookieParser());
+//app.use(express.cookieParser());
+
 
 //3- Invocamos a dotenv
 const dotenv = require('dotenv');
@@ -31,41 +39,79 @@ app.use(session({
 
 // 8 - Invocamos a la conexion de la DB
 const connection = require('./database/db');
+const { getQueriesByusername } = require('./database/helpers.js')
+
+app.get('/', async (req, res)=> {
+	if (req.session.loggedin) {
+		const queries = await getQueriesByusername("supporter"); 
+		res.render('index',{
+			login: true,
+			name: req.session.name,
+			queries: queries
+		});		
+	} else {
+		res.render('make_query');	
+	}
+	//res.end();
+});
 
 //9 - establecemos las rutas
 	app.get('/login',(req, res)=>{
 		res.render('login');
 	})
 
-	app.get('/register',(req, res)=>{
+	app.get('/createUsers',(req, res)=>{
 		res.render('register');
 	})
 
-//10 - Método para la REGISTRACIÓN
-app.post('/register', async (req, res)=>{
+//Bloquear este metodo solo para Supporters e Engineers
+app.post('/createUsers', async (req, res)=>{
 	const user = req.body.user;
 	const name = req.body.name;
     const rol = req.body.rol;
 	const pass = req.body.pass;
 	let passwordHash = await bcrypt.hash(pass, 8);
-    connection.query('INSERT INTO users SET ?',{user:user, name:name, rol:rol, pass:passwordHash}, async (error, results)=>{
+    connection.query('INSERT INTO users SET ?',{user:user, name:name, rol:rol, hashed_pwd:passwordHash}, async (error, results)=>{
         if(error){
             console.log(error);
         }else{            
 			res.render('register', {
 				alert: true,
-				alertTitle: "Registration",
-				alertMessage: "¡Successful Registration!",
+				alertTitle: "Creacion de usuario",
+				alertMessage: "Se creo el usuario exitosamente!",
 				alertIcon:'success',
 				showConfirmButton: false,
 				timer: 1500,
 				ruta: ''
 			});
-            //res.redirect('/');         
+            res.redirect('/');         
         }
 	});
 })
 
+app.get('/test', async (req, res)=>{
+	res.send(await getQueriesByusername('supporter'))
+})
+
+app.post('/createQuery', async (req, res)=>{
+	const query = req.body.query;
+	const assigned_user = "supporter";
+    connection.query('INSERT INTO queries SET ?', {assigned_user:assigned_user, query:query}, async (error, results)=>{
+        if(error){
+            console.log(error);
+        }else{
+			res.render('alert_msg', {
+				alert: true,
+				alertTitle: "Consulta",
+				alertMessage: "Se envio la consulta exitosamente!",
+				alertIcon:'success',
+				showConfirmButton: false,
+				timer: 1500,
+				ruta: ''
+			});         
+        }
+	});
+})
 
 
 //11 - Metodo para la autenticacion
@@ -75,7 +121,7 @@ app.post('/auth', async (req, res)=> {
     let passwordHash = await bcrypt.hash(pass, 8);
 	if (user && pass) {
 		connection.query('SELECT * FROM users WHERE user = ?', [user], async (error, results, fields)=> {
-			if( results.length == 0 || !(await bcrypt.compare(pass, results[0].pass)) ) {    
+			if( results.length == 0 || !(await bcrypt.compare(pass, results[0].hashed_pwd)) ) {    
 				res.render('login', {
                         alert: true,
                         alertTitle: "Error",
@@ -90,6 +136,9 @@ app.post('/auth', async (req, res)=> {
                 //res.send('Incorrect Username and/or Password!');				
 			} else {         
 				//creamos una var de session y le asignamos true si INICIO SESSION       
+				//jwt.sign({
+				//	data: 'foobar'
+				//  }, 'secret', { expiresIn: 60 * 60 });
 				req.session.loggedin = true;                
 				req.session.name = results[0].name;
 				res.render('login', {
@@ -111,7 +160,7 @@ app.post('/auth', async (req, res)=> {
 });
 
 //12 - Método para controlar que está auth en todas las páginas
-app.get('/', (req, res)=> {
+app.get('/login', (req, res)=> {
 	if (req.session.loggedin) {
 		res.render('index',{
 			login: true,
@@ -138,7 +187,7 @@ app.use(function(req, res, next) {
 //Destruye la sesión.
 app.get('/logout', function (req, res) {
 	req.session.destroy(() => {
-	  res.redirect('/') // siempre se ejecutará después de que se destruya la sesión
+	  res.redirect('/login') // siempre se ejecutará después de que se destruya la sesión
 	})
 });
 

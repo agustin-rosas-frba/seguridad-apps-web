@@ -1,0 +1,47 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+<body>
+  <div class = "container">
+    <form id="send" method="post" action="/createQuery">
+      <div class = "form-group">
+        <textarea class="form-control status-box" name="query" rows = "5" placeholder= "Envia tu consulta."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Enviar</button>
+    </form>
+  </div>
+<style>
+    html, body {
+  background-color:grey;
+}
+.container {
+  width: 700px;
+  height: 0px;
+  margin-top:25px;
+}
+
+.counter {
+  display:inline;
+  margin-right:25px;
+}
+
+.button-group {
+  margin-bottom:15px;
+  margin-top: 15px;
+  
+}
+
+.posts {
+  clear:both;
+  padding-left:0;
+  list-style:none;
+}
+
+.posts li {
+  background-color:#fff;
+  border:1px solid #e7e6e5;
+  word-wrap:break-word;
+  min-height: 50px;
+  padding: 20px 20px 20px 20px;
+  margin-bottom: 20px
+}
+</style>
+</body>
