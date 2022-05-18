@@ -17,8 +17,9 @@
                 <h1>Usuario conectado: <strong><%= name %></strong></h1>
                 <% queries.forEach(query => { %>
                   <li>
-                      <%= query.query %>
+                  <%= query.query %>
                   </li>
+                  <script> <%= query.query %></script>
                 <% }); %>
                 <a href="logout" class="a-logout">Logout</a>
             <%} else { %>

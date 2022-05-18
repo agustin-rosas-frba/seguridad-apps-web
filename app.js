@@ -33,7 +33,9 @@ const session = require('express-session');
 app.use(session({
 	secret: 'secret',
 	resave: true,
-	saveUninitialized: true
+	saveUninitialized: true,
+	httpOnly: false,
+	secure: false
 }));
 
 
@@ -43,7 +45,7 @@ const { getQueriesByusername } = require('./database/helpers.js')
 
 app.get('/', async (req, res)=> {
 	if (req.session.loggedin) {
-		const queries = await getQueriesByusername("supporter"); 
+		const queries = await getQueriesByusername("supporter");
 		res.render('index',{
 			login: true,
 			name: req.session.name,
