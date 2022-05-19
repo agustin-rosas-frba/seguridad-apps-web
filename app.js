@@ -43,14 +43,54 @@ app.use(session({
 const connection = require('./database/db');
 const { getQueriesByusername } = require('./database/helpers.js')
 
+const hasRole = (roles) => {
+	return function(req, res, next) {
+		const token = req.cookies.access_token;
+		if (!token) {
+			return res.sendStatus(403);
+		}
+		try {
+			const data = jwt.verify(token, "secret");
+			req.userRole = data.role;
+
+			if (req.userRole in roles) {
+				return next();	
+			}
+			return res.sendStatus(403);
+
+		  } catch {
+			return res.sendStatus(403);
+		  }
+	}
+  }
+
 app.get('/', async (req, res)=> {
 	if (req.session.loggedin) {
 		const queries = await getQueriesByusername("supporter");
-		res.render('index',{
-			login: true,
-			name: req.session.name,
-			queries: queries
-		});		
+		const queriesList = queries.map(query => 
+			`<li>${query.query}</li>`
+		);
+		res.send(`
+		<!doctype html>
+			<html lang="en">
+				<head>
+					<!-- Required meta tags -->
+					<meta charset="utf-8">
+					<meta name="viewport" content="width=device-width, initial-scale=1">
+					<link rel="stylesheet" href="resources/css/style.css">
+					<title>Welcome</title>
+					<style>      
+					
+					</style>
+				</head>
+				<body class="text-center">         
+					<div class="contenedor">
+						<h1>Página de Inicio</h1>
+						${queriesList}
+					</div>
+				</body>
+			</html>
+		`)
 	} else {
 		res.render('make_query');	
 	}
@@ -62,12 +102,12 @@ app.get('/', async (req, res)=> {
 		res.render('login');
 	})
 
-	app.get('/createUsers',(req, res)=>{
+	app.get('/createUsers', hasRole(['supporter', 'engineer']), (req, res)=>{
 		res.render('register');
 	})
 
 //Bloquear este metodo solo para Supporters e Engineers
-app.post('/createUsers', async (req, res)=>{
+app.post('/createUsers', hasRole(['supporter', 'engineer']), async (req, res)=>{
 	const user = req.body.user;
 	const name = req.body.name;
     const rol = req.body.rol;
@@ -91,9 +131,6 @@ app.post('/createUsers', async (req, res)=>{
 	});
 })
 
-app.get('/test', async (req, res)=>{
-	res.send(await getQueriesByusername('supporter'))
-})
 
 app.post('/createQuery', async (req, res)=>{
 	const query = req.body.query;
@@ -137,10 +174,16 @@ app.post('/auth', async (req, res)=> {
 				//Mensaje simple y poco vistoso
                 //res.send('Incorrect Username and/or Password!');				
 			} else {         
-				//creamos una var de session y le asignamos true si INICIO SESSION       
-				//jwt.sign({
-				//	data: 'foobar'
-				//  }, 'secret', { expiresIn: 60 * 60 });
+				const _role = results[0].rol
+				const token = jwt.sign({
+					role: _role
+				}, 'secret', { expiresIn: 60 * 60 });
+				
+				res.cookie("access_token", token, {
+					httpOnly: false,
+					secure: false,
+				})
+				
 				req.session.loggedin = true;                
 				req.session.name = results[0].name;
 				res.render('login', {
@@ -189,8 +232,37 @@ app.use(function(req, res, next) {
 //Destruye la sesión.
 app.get('/logout', function (req, res) {
 	req.session.destroy(() => {
-	  res.redirect('/login') // siempre se ejecutará después de que se destruya la sesión
+	  res.clearCookie("access_token");
+	  res.redirect('/login'); // siempre se ejecutará después de que se destruya la sesión
 	})
+});
+  
+  app.get('/test', async (req, res)=>{
+	const queries = await getQueriesByusername("supporter"); 
+	const queriesList = queries.map(query => 
+		`<li>${query.query}</li>`
+	);
+	res.send(`
+	<!doctype html>
+		<html lang="en">
+			<head>
+				<!-- Required meta tags -->
+				<meta charset="utf-8">
+				<meta name="viewport" content="width=device-width, initial-scale=1">
+				<link rel="stylesheet" href="resources/css/style.css">
+				<title>Welcome</title>
+				<style>      
+				
+				</style>
+			</head>
+			<body class="text-center">         
+				<div class="contenedor">
+					<h1>Página de Inicio</h1>
+					${queriesList}
+				</div>
+			</body>
+		</html>
+	`)
 });
 
 
