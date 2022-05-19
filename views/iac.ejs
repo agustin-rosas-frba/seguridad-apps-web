@@ -1,0 +1,24 @@
+
+<div class = "container"></div>
+    <form action="iac_template" method="GET">
+
+            <h1><input type="text" id="title" placeholder="Escribi tu infrastructura como codigo para poder desplegar instancias." value="<%=iac_code %>"></h1>
+
+        <button type="submit" class="btn btn-primary">Cargar template de IaC</button>
+    </form>
+</div>
+
+<button type="submit" class="btn btn-primary">Desplegar infrastructura</button>
+
+
+<style>
+    html, body {
+  background-color:grey;
+}
+.container {
+  width: 700px;
+  height: 0px;
+  margin-top:25px;
+}
+
+</style>

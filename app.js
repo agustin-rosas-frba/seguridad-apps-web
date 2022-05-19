@@ -3,7 +3,8 @@ const express = require('express');
 const app = express();
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
-
+const moment = require('moment')
+var fs = require('fs');
 
 
 
@@ -19,6 +20,7 @@ const dotenv = require('dotenv');
 dotenv.config({ path: './env/.env'});
 
 //4 -seteamos el directorio de assets
+app.use(express.static('public'));
 app.use('/resources',express.static('public'));
 app.use('/resources', express.static(__dirname + '/public'));
 
@@ -41,7 +43,7 @@ app.use(session({
 
 // 8 - Invocamos a la conexion de la DB
 const connection = require('./database/db');
-const { getQueriesByusername } = require('./database/helpers.js')
+const { getQueriesByusername } = require('./database/helpers.js');
 
 const hasRole = (roles) => {
 	return function(req, res, next) {
@@ -52,8 +54,8 @@ const hasRole = (roles) => {
 		try {
 			const data = jwt.verify(token, "secret");
 			req.userRole = data.role;
-
-			if (req.userRole in roles) {
+			
+			if (roles.includes(req.userRole)) {
 				return next();	
 			}
 			return res.sendStatus(403);
@@ -236,35 +238,35 @@ app.get('/logout', function (req, res) {
 	  res.redirect('/login'); // siempre se ejecutará después de que se destruya la sesión
 	})
 });
-  
-  app.get('/test', async (req, res)=>{
-	const queries = await getQueriesByusername("supporter"); 
-	const queriesList = queries.map(query => 
-		`<li>${query.query}</li>`
-	);
-	res.send(`
-	<!doctype html>
-		<html lang="en">
-			<head>
-				<!-- Required meta tags -->
-				<meta charset="utf-8">
-				<meta name="viewport" content="width=device-width, initial-scale=1">
-				<link rel="stylesheet" href="resources/css/style.css">
-				<title>Welcome</title>
-				<style>      
-				
-				</style>
-			</head>
-			<body class="text-center">         
-				<div class="contenedor">
-					<h1>Página de Inicio</h1>
-					${queriesList}
-				</div>
-			</body>
-		</html>
-	`)
+
+app.get('/create_infrastructure', hasRole(['engineer']), (req, res)=> {
+	res.render('iac',{
+		iac_code: ""
+	});
 });
 
+app.get('/iac_template', hasRole(['engineer']), (req, res)=> {
+	let iac_template_filename = "";
+	if (!req.query.filename){
+		iac_template_filename = "./iac_template.txt"
+	} else {
+		iac_template_filename = req.query.filename
+	}
+
+
+	fs.readFile(iac_template_filename, 'utf8', function (err, data) {
+		if (err) {
+			console.error(err);
+			res.render('iac',{
+				iac_code: ""
+			});
+		}
+		console.log(data)
+		res.render('iac',{
+			iac_code: data	
+		});
+	  });
+});
 
 app.listen(3000, (req, res)=>{
     console.log('SERVER RUNNING IN http://localhost:3000');
