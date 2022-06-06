@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+  db:
+    build: ./docker-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: seguridad_apps_web
+    restart: always
+    ports:
+      - "3306:3306"
+  web:
+    build: ./
+    environment:
+      MYSQL_DATABASE: seguridad_apps_web
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_HOST: localhost
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    restart: on-failure
