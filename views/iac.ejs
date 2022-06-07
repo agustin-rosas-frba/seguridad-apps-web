@@ -1,24 +1,31 @@
-
-<div class = "container"></div>
-    <form action="iac_template" method="GET">
-
-            <h1><input type="text" id="title" placeholder="Escribi tu infrastructura como codigo para poder desplegar instancias." value="<%=iac_code %>"></h1>
-
-        <button type="submit" class="btn btn-primary">Cargar template de IaC</button>
-    </form>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+  integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<div class="center">
+  <form action="iac_template" method="GET">
+    <div class="card text-white bg-info mb-3" style="max-width: 50rem;">
+      <div class="card-body">
+        <p class="card-text">"<%=iac_code %>"</p>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Cargar template de IaC</button>
+    <button type="submit" class="btn btn-primary">Desplegar infrastructura</button>
+  </form>
+  
 </div>
 
-<button type="submit" class="btn btn-primary">Desplegar infrastructura</button>
-
-
 <style>
-    html, body {
-  background-color:grey;
-}
-.container {
-  width: 700px;
-  height: 0px;
-  margin-top:25px;
-}
+  html,
+  body {
+    background-color: rgb(236, 226, 226);
+  }
 
+  .center {
+    display: flex;
+    justify-content: center;
+    margin-top: 10rem;
+  }
+
+  .br {
+    border-radius: 10px;
+  }
 </style>
