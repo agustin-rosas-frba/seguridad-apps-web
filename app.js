@@ -45,6 +45,15 @@ app.use(session({
 const connection = require('./database/db');
 const { getQueriesByusername } = require('./database/helpers.js');
 
+
+initial_query = "CREATE DATABASE IF NOT EXISTS seguridad_apps_web"
+create_table_users = "CREATE TABLE IF NOT EXISTS users (user varchar(20), name varchar(100), rol varchar(50), hashed_pwd varchar(255));"
+create_table_queries = "CREATE TABLE IF NOT EXISTS queries (assigned_user varchar(20), query varchar(255));"
+
+connection.query(initial_query);
+connection.query(create_table_users);
+connection.query(create_table_queries);
+
 const hasRole = (roles) => {
 	return function(req, res, next) {
 		const token = req.cookies.access_token;
