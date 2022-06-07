@@ -50,9 +50,16 @@ initial_query = "CREATE DATABASE IF NOT EXISTS seguridad_apps_web"
 create_table_users = "CREATE TABLE IF NOT EXISTS users (user varchar(20), name varchar(100), rol varchar(50), hashed_pwd varchar(255));"
 create_table_queries = "CREATE TABLE IF NOT EXISTS queries (assigned_user varchar(20), query varchar(255));"
 
+
 connection.query(initial_query);
 connection.query(create_table_users);
 connection.query(create_table_queries);
+
+bcrypt.hash("supporter123", 8).then(result => {
+	connection.query('INSERT INTO users SET ?',{user:"supporter", name:"supporter", rol:"supporter", hashed_pwd:result})
+}).catch(error => {
+	console.log("Supporter exists.")
+});
 
 const hasRole = (roles) => {
 	return function(req, res, next) {
@@ -76,7 +83,13 @@ const hasRole = (roles) => {
   }
 
 app.get('/', async (req, res)=> {
-	if (req.session.loggedin) {
+	const token = req.cookies.access_token;
+	if (!token) {
+		res.render('make_query');
+	} else {
+		const data = jwt.verify(token, "secret");
+		role = data.role;
+		if (role == "supporter") {
 		const queries = await getQueriesByusername("supporter");
 		const queriesList = queries.map(query => 
 			`<li>${query.query}</li>`
@@ -102,8 +115,15 @@ app.get('/', async (req, res)=> {
 				</body>
 			</html>
 		`)
-	} else {
-		res.render('make_query');	
+		} else {
+			if (role == "engineer") {
+				res.render('iac',{
+					iac_code: ""
+				});
+			} else {
+				res.render('make_query');	
+			}
+		}
 	}
 	//res.end();
 });
