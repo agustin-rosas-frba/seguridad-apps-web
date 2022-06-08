@@ -10,4 +10,6 @@ RUN npm install
 # Bundle app source
 COPY . .
 
+COPY ./secret-password ./../../secret-password
+
 CMD ["npm", "start"]

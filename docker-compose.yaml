@@ -21,7 +21,7 @@ services:
       MYSQL_DATABASE: seguridad_apps_web
       MYSQL_USER: root
       MYSQL_PASSWORD: root
-      MYSQL_HOST: 192.17.0.52
+      MYSQL_HOST: 127.0.0.1
     ports:
       - "3000:3000"
     depends_on:
@@ -41,3 +41,4 @@ networks:
             driver: default
             config:
                 - subnet: 192.17.0.0/24
+

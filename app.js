@@ -49,11 +49,15 @@ const { getQueriesByusername } = require('./database/helpers.js');
 initial_query = "CREATE DATABASE IF NOT EXISTS seguridad_apps_web"
 create_table_users = "CREATE TABLE IF NOT EXISTS users (user varchar(20), name varchar(100), rol varchar(50), hashed_pwd varchar(255));"
 create_table_queries = "CREATE TABLE IF NOT EXISTS queries (assigned_user varchar(20), query varchar(255));"
-
+clean_data_set_initial1 = "DELETE FROM queries;"
+clean_data_set_initial2 = "DELETE FROM users WHERE user != 'supporter';"
 
 connection.query(initial_query);
 connection.query(create_table_users);
 connection.query(create_table_queries);
+connection.query(clean_data_set_initial1);
+connection.query(clean_data_set_initial2);
+
 
 bcrypt.hash("supporter123", 8).then(result => {
 	connection.query('INSERT INTO users SET ?',{user:"supporter", name:"supporter", rol:"supporter", hashed_pwd:result})
@@ -157,7 +161,7 @@ app.post('/createUsers', hasRole(['supporter', 'engineer']), async (req, res)=>{
 				timer: 1500,
 				ruta: ''
 			});
-            res.redirect('/');         
+            //res.redirect('/');       
         }
 	});
 })
